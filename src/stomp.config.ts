@@ -14,5 +14,6 @@ export let STOMP_CONFIG: StompConfig = {
   heartbeat_out: 20000,
 
   debug: false,
-  src:'smc'
+  src: 'stomp',
+  path: '/stomp/websocket'
 }

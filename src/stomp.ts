@@ -37,7 +37,7 @@ export class STOMP {
     }
 
     // Attempt connection, passing in a callback
-    this._client = Stomp.over(new WebSocket(`${scheme}://${this._config.host}:${this._config.port}/stomp/websocket`), {
+    this._client = Stomp.over(new WebSocket(`${scheme}://${this._config.host}:${this._config.port}${this._config.path}`), {
       heartbeat: { outgoing: this._config.heartbeat_out, incoming: this._config.heartbeat_in },
       debug: this._config.debug,
       binary: false,
@@ -197,6 +197,10 @@ export interface StompConfig {
 
   // from where to publish
   src?: string;
+  /**
+   * @desc which place, default to /stomp/websocket
+   */
+  path: string;
 };
 
 

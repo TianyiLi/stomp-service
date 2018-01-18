@@ -11,6 +11,7 @@ exports.STOMP_CONFIG = {
     heartbeat_in: 0,
     heartbeat_out: 20000,
     debug: false,
-    src: 'smc'
+    src: 'stomp',
+    path: '/stomp/websocket'
 };
 //# sourceMappingURL=stomp.config.js.map

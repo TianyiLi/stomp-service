@@ -55,6 +55,10 @@ export interface StompConfig {
     heartbeat_out?: number;
     debug: boolean;
     src?: string;
+    /**
+     * @desc which place, default to /stomp/websocket
+     */
+    path: string;
 }
 /** possible states for the STOMP service */
 export declare enum STOMPState {
