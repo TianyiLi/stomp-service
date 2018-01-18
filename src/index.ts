@@ -1,23 +1,28 @@
 import { STOMP_CONFIG } from './stomp.config';
 import { EventEmitter } from 'events';
-import { STOMP } from './stomp';
+import { STOMP, StompConfig } from './stomp';
 
 export enum StompServiceState {
   Close,
   Connected
 }
-
+export let stompConfig = STOMP_CONFIG
 export class StompService extends EventEmitter {
   private _stomp = new STOMP();
   private _state = StompServiceState.Close;
+  private _config =  STOMP_CONFIG
 
   constructor() {
     super();
   }
 
+  configure(config:StompConfig){
+    this._config = Object.assign({}, config, this._config)
+  }
+
   start = async (isTest = false) => {
     // config
-    let config = STOMP_CONFIG;
+    let config = this._config
     // when test
     if (isTest) {
       config.debug = true

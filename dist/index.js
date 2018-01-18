@@ -16,14 +16,16 @@ var StompServiceState;
     StompServiceState[StompServiceState["Close"] = 0] = "Close";
     StompServiceState[StompServiceState["Connected"] = 1] = "Connected";
 })(StompServiceState = exports.StompServiceState || (exports.StompServiceState = {}));
+exports.stompConfig = stomp_config_1.STOMP_CONFIG;
 class StompService extends events_1.EventEmitter {
     constructor() {
         super();
         this._stomp = new stomp_1.STOMP();
         this._state = StompServiceState.Close;
+        this._config = stomp_config_1.STOMP_CONFIG;
         this.start = (isTest = false) => __awaiter(this, void 0, void 0, function* () {
             // config
-            let config = stomp_config_1.STOMP_CONFIG;
+            let config = this._config;
             // when test
             if (isTest) {
                 config.debug = true;
@@ -87,6 +89,9 @@ class StompService extends events_1.EventEmitter {
             return this._state;
         };
     }
+    configure(config) {
+        this._config = Object.assign({}, config, this._config);
+    }
 }
 exports.StompService = StompService;
-//# sourceMappingURL=main.js.map
+//# sourceMappingURL=index.js.map
