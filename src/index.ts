@@ -1,22 +1,23 @@
 import { STOMP_CONFIG } from './stomp.config';
 import { EventEmitter } from 'events';
 import { STOMP, StompConfig } from './stomp';
+import { Message } from 'webstomp-client'
 
 export enum StompServiceState {
   Close,
   Connected
 }
 export let stompConfig = STOMP_CONFIG
-export class StompService extends EventEmitter {
+export class StompService extends EventEmitter implements ServiceEvent {
   private _stomp = new STOMP();
   private _state = StompServiceState.Close;
-  private _config =  STOMP_CONFIG
+  private _config = STOMP_CONFIG
 
   constructor() {
     super();
   }
 
-  configure(config:StompConfig){
+  configure(config: StompConfig) {
     this._config = Object.assign({}, config, this._config)
   }
 
@@ -90,4 +91,15 @@ export class StompService extends EventEmitter {
   status = () => {
     return this._state;
   }
+}
+export interface ServiceEvent {
+  on(state: 'connected', fn: () => void)
+  on(state: 'error', fn: () => void)
+  on(state: 'message', fn: (message: Message) => void)
+
+  once(state: 'connected', fn: () => void)
+  once(state: 'error', fn: () => void)
+  once(state: 'message', fn: (message: Message) => void)
+
+  emit(state: 'publish', data: any)
 }
