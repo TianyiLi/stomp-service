@@ -5,9 +5,9 @@ const WebSocket = require("ws");
 class STOMP {
     constructor() {
         this._subscribeList = [];
+        this._websocket = undefined;
         // Callback run on successfully connecting to server
         this.on_connect = () => {
-            console.log('Connected');
             // Indicate our connected state to observers
             this.state = STOMPState.CONNECTED;
             // Subscribe to message queues
@@ -52,7 +52,8 @@ class STOMP {
             scheme = 'wss';
         }
         // Attempt connection, passing in a callback
-        this._client = Stomp.over(new WebSocket(`${scheme}://${this._config.host}:${this._config.port}${this._config.path}`), {
+        this._websocket = new WebSocket(`${scheme}://${this._config.host}:${this._config.port}${this._config.path}`);
+        this._client = Stomp.over(this._websocket, {
             heartbeat: { outgoing: this._config.heartbeat_out, incoming: this._config.heartbeat_in },
             debug: this._config.debug,
             binary: false,
@@ -81,7 +82,6 @@ class STOMP {
         this._connectCallBack = callback;
         // Attempt connection, passing in a callback
         this._client.connect(this._config.user, this._config.pass, this.on_connect, this.on_error);
-        console.log('Connecting...');
         this.state = STOMPState.TRYING;
         return new Promise((resolve, reject) => this._resolvePromise = resolve);
     }
@@ -91,7 +91,16 @@ class STOMP {
         this.state = STOMPState.DISCONNECTING;
         // Disconnect. Callback will set CLOSED state
         if (this._client) {
-            this._client.disconnect(() => this.state = STOMPState.CLOSED);
+            return new Promise((resolve, reject) => {
+                this._client.disconnect(() => {
+                    this.state = STOMPState.CLOSED;
+                    this._websocket.close();
+                    resolve();
+                });
+            });
+        }
+        else {
+            return Promise.reject('No connection');
         }
     }
     /** Send a message to all topics */

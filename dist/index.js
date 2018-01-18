@@ -23,6 +23,7 @@ class StompService extends events_1.EventEmitter {
         this._stomp = new stomp_1.STOMP();
         this._state = StompServiceState.Close;
         this._config = stomp_config_1.STOMP_CONFIG;
+        this._intervalTimer = undefined;
         this.start = (isTest = false) => __awaiter(this, void 0, void 0, function* () {
             // config
             let config = this._config;
@@ -38,7 +39,7 @@ class StompService extends events_1.EventEmitter {
                  */
                 this._state = StompServiceState.Connected;
                 this.emit('connected', {});
-                setInterval(() => {
+                this._intervalTimer = setInterval(() => {
                     this._stomp.publish('{}', ['/topic/heartbeat']);
                 }, config.heartbeat_out);
                 return true;
@@ -69,7 +70,7 @@ class StompService extends events_1.EventEmitter {
          */
         this.onPublishHandler = (data) => {
             let d = data instanceof Object ? data : JSON.parse(data);
-            let publish_channel = stomp_config_1.STOMP_CONFIG.publish;
+            let publish_channel = this._config.publish;
             d.src = 'node-payment';
             this._stomp.publish(d, publish_channel);
         };
@@ -82,6 +83,7 @@ class StompService extends events_1.EventEmitter {
         this.disconnect = () => {
             this._stomp.disconnect('Stomp Service end');
             this._state = StompServiceState.Close;
+            clearInterval(this._intervalTimer);
         };
         this.errorCollector = (data) => {
             console.log(data);
@@ -91,7 +93,7 @@ class StompService extends events_1.EventEmitter {
         };
     }
     configure(config) {
-        this._config = Object.assign({}, config, this._config);
+        this._config = Object.assign({}, this._config, config);
     }
 }
 exports.StompService = StompService;

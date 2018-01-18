@@ -7,6 +7,7 @@ export declare class STOMP {
     private _resolvePromise;
     private _connectCallBack;
     private _subscribeList;
+    private _websocket;
     constructor();
     /** Set up configuration */
     configure(config?: StompConfig): void;
@@ -24,7 +25,7 @@ export declare class STOMP {
      */
     try_connect(callback: (message: Stomp.Message) => void): Promise<{}>;
     /** Disconnect the STOMP client and clean up */
-    disconnect(message?: string): void;
+    disconnect(message?: string): Promise<void>;
     /** Send a message to all topics */
     publish(message: string, publish?: string[]): void;
     /** Subscribe to server message queues */

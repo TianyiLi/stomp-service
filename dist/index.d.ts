@@ -11,6 +11,7 @@ export declare class StompService extends EventEmitter implements ServiceEvent {
     private _stomp;
     private _state;
     private _config;
+    private _intervalTimer;
     constructor();
     configure(config: StompConfig): void;
     start: (isTest?: boolean) => Promise<boolean>;
