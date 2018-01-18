@@ -34,6 +34,7 @@ export class StompService extends EventEmitter {
          * When STOMP service already connect
          */
         this._state = StompServiceState.Connected;
+        this.emit('connected', {})
         setInterval(() => {
           this._stomp.publish('{}', ['/topic/heartbeat'])
         }, config.heartbeat_out)
