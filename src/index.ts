@@ -12,13 +12,14 @@ export class StompService extends EventEmitter implements ServiceEvent {
   private _stomp = new STOMP();
   private _state = StompServiceState.Close;
   private _config = STOMP_CONFIG
+  private _intervalTimer:NodeJS.Timer = undefined
 
   constructor() {
     super();
   }
 
   configure(config: StompConfig) {
-    this._config = Object.assign({}, config, this._config)
+    this._config = Object.assign({}, this._config, config)
   }
 
   start = async (isTest = false) => {
@@ -36,7 +37,7 @@ export class StompService extends EventEmitter implements ServiceEvent {
          */
         this._state = StompServiceState.Connected;
         this.emit('connected', {})
-        setInterval(() => {
+        this._intervalTimer = setInterval(() => {
           this._stomp.publish('{}', ['/topic/heartbeat'])
         }, config.heartbeat_out)
         return true
@@ -68,7 +69,7 @@ export class StompService extends EventEmitter implements ServiceEvent {
    */
   onPublishHandler = (data) => {
     let d = data instanceof Object ? data : JSON.parse(data);
-    let publish_channel = STOMP_CONFIG.publish;
+    let publish_channel = this._config.publish;
     d.src = 'node-payment'
     this._stomp.publish(d, publish_channel)
   }
@@ -82,6 +83,7 @@ export class StompService extends EventEmitter implements ServiceEvent {
   disconnect = () => {
     this._stomp.disconnect('Stomp Service end')
     this._state = StompServiceState.Close;
+    clearInterval(this._intervalTimer)
   }
 
   errorCollector = (data) => {

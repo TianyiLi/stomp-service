@@ -9,6 +9,7 @@ export class STOMP {
   private _resolvePromise: { (...args: any[]): void };
   private _connectCallBack: (mes: Stomp.Message) => any;
   private _subscribeList = []
+  private _websocket:WebSocket = undefined
 
   public constructor() {
     this.state = STOMPState.CLOSED;
@@ -37,7 +38,8 @@ export class STOMP {
     }
 
     // Attempt connection, passing in a callback
-    this._client = Stomp.over(new WebSocket(`${scheme}://${this._config.host}:${this._config.port}${this._config.path}`), {
+    this._websocket = new WebSocket(`${scheme}://${this._config.host}:${this._config.port}${this._config.path}`)
+    this._client = Stomp.over(this._websocket, {
       heartbeat: { outgoing: this._config.heartbeat_out, incoming: this._config.heartbeat_in },
       debug: this._config.debug,
       binary: false,
@@ -78,7 +80,6 @@ export class STOMP {
       this.on_error
     );
 
-    console.log('Connecting...');
     this.state = STOMPState.TRYING;
 
     return new Promise(
@@ -88,16 +89,24 @@ export class STOMP {
 
 
   /** Disconnect the STOMP client and clean up */
-  public disconnect(message?: string): void {
+  public disconnect(message?: string): Promise<void> {
 
     // Notify observers that we are disconnecting!
     this.state = STOMPState.DISCONNECTING;
 
     // Disconnect. Callback will set CLOSED state
     if (this._client) {
-      this._client.disconnect(
-        () => this.state = STOMPState.CLOSED
-      );
+      return new Promise((resolve, reject)=>{
+        this._client.disconnect(
+          () => {
+            this.state = STOMPState.CLOSED
+            this._websocket.close()
+            resolve()
+          }
+        );
+      })
+    } else {
+      return Promise.reject('No connection')
     }
   }
 
@@ -142,7 +151,6 @@ export class STOMP {
 
   // Callback run on successfully connecting to server
   public on_connect = () => {
-    console.log('Connected');
     // Indicate our connected state to observers
     this.state = STOMPState.CONNECTED;
     // Subscribe to message queues
