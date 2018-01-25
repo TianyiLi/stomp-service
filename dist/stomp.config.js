@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.STOMP_CONFIG = {
-    host: "0.0.0.0",
+    host: "localhost",
     port: 61614,
     ssl: false,
     user: "user",

@@ -24,6 +24,10 @@ class StompService extends events_1.EventEmitter {
         this._state = StompServiceState.Close;
         this._config = stomp_config_1.STOMP_CONFIG;
         this._intervalTimer = undefined;
+        /**
+         * Start the service
+         * @event StompService#connected
+         */
         this.start = (isTest = false) => __awaiter(this, void 0, void 0, function* () {
             // config
             let config = this._config;
@@ -44,6 +48,13 @@ class StompService extends events_1.EventEmitter {
                 }, config.heartbeat_out);
                 return true;
             });
+            /**
+             * StompService publish signal
+             *
+             * @event StompService#publish
+             * @type {object}
+             * @property {string} _channel
+             */
             this.on('publish', this.onPublishHandler);
             this.on('error', this.errorCollector);
             return process;
@@ -51,7 +62,7 @@ class StompService extends events_1.EventEmitter {
         /**
          * Receive the message from broker, emit JSON data to the listener
          *
-         *
+         * @fires StompService#message
          * @memberof StompService
          */
         this.onMessageHandler = (message) => {
@@ -59,6 +70,11 @@ class StompService extends events_1.EventEmitter {
                 console.log("Empty message receive");
             else {
                 let data = JSON.parse(message.body);
+                /**
+                 * message event
+                 * @event StompService#message
+                 * @type {object}
+                 */
                 this.emit('message', data);
             }
         };
@@ -75,7 +91,6 @@ class StompService extends events_1.EventEmitter {
                 publish_channel = d._channel;
                 delete d._channel;
             }
-            d.src = 'node-payment';
             this._stomp.publish(d, publish_channel);
         };
         /**
@@ -102,6 +117,11 @@ class StompService extends events_1.EventEmitter {
     set publishChannels(chns) {
         this._config.publish = chns;
     }
+    /**
+     * Set configuration
+     *
+     * @param config
+     */
     configure(config) {
         this._config = Object.assign({}, this._config, config);
     }

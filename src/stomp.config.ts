@@ -1,6 +1,6 @@
 import { StompConfig } from './stomp';
 export let STOMP_CONFIG: StompConfig = {
-  host: "0.0.0.0",
+  host: "localhost",
   port: 61614,
   ssl: false,
 

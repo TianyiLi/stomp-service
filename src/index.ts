@@ -8,27 +8,37 @@ export enum StompServiceState {
   Connected
 }
 export let stompConfig = STOMP_CONFIG
-export class StompService extends EventEmitter implements ServiceEvent {
+export class StompService extends EventEmitter implements IServiceEvent {
   private _stomp = new STOMP();
   private _state = StompServiceState.Close;
   private _config = STOMP_CONFIG
-  private _intervalTimer:NodeJS.Timer = undefined
+  private _intervalTimer: NodeJS.Timer = undefined
 
   constructor() {
     super();
   }
 
-  get publishChannels(){
+  get publishChannels() {
     return this._config.publish
   }
-  set publishChannels(chns:string[]) {
+
+  set publishChannels(chns: string[]) {
     this._config.publish = chns
   }
 
+  /**
+   * Set configuration
+   * 
+   * @param config
+   */
   configure(config: StompConfig) {
     this._config = Object.assign({}, this._config, config)
   }
 
+  /**
+   * Start the service
+   * @event StompService#connected
+   */
   start = async (isTest = false) => {
     // config
     let config = this._config
@@ -49,6 +59,13 @@ export class StompService extends EventEmitter implements ServiceEvent {
         }, config.heartbeat_out)
         return true
       })
+    /**
+     * StompService publish signal
+     * 
+     * @event StompService#publish
+     * @type {object}
+     * @property {string} _channel
+     */
     this.on('publish', this.onPublishHandler)
     this.on('error', this.errorCollector)
     return process;
@@ -57,13 +74,19 @@ export class StompService extends EventEmitter implements ServiceEvent {
   /**
    * Receive the message from broker, emit JSON data to the listener
    * 
-   * 
+   * @fires StompService#message
    * @memberof StompService
    */
-  onMessageHandler = (message) => {
+  onMessageHandler = (message: Message) => {
     if (!message.body) console.log("Empty message receive");
     else {
       let data = JSON.parse(message.body);
+      
+      /**
+       * message event
+       * @event StompService#message
+       * @type {object}
+       */
       this.emit('message', data);
     }
   }
@@ -81,7 +104,6 @@ export class StompService extends EventEmitter implements ServiceEvent {
       publish_channel = d._channel
       delete d._channel
     }
-    d.src = 'node-payment'
     this._stomp.publish(d, publish_channel)
   }
 
@@ -101,7 +123,7 @@ export class StompService extends EventEmitter implements ServiceEvent {
     return this._stomp.unsubscribe
   }
 
-  subscribe(channel:string) {
+  subscribe(channel: string) {
     return this._stomp.subscribe(channel)
   }
 
@@ -113,7 +135,7 @@ export class StompService extends EventEmitter implements ServiceEvent {
     return this._state;
   }
 }
-export interface ServiceEvent {
+export interface IServiceEvent {
   on(state: 'connected', fn: () => void)
   on(state: 'error', fn: () => void)
   on(state: 'message', fn: (message: Message) => void)
@@ -122,5 +144,5 @@ export interface ServiceEvent {
   once(state: 'error', fn: () => void)
   once(state: 'message', fn: (message: Message) => void)
 
-  emit(state: 'publish', data: any)
+  emit(event: 'publish', data: any)
 }

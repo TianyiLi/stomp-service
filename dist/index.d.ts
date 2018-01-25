@@ -7,22 +7,31 @@ export declare enum StompServiceState {
     Connected = 1,
 }
 export declare let stompConfig: StompConfig;
-export declare class StompService extends EventEmitter implements ServiceEvent {
+export declare class StompService extends EventEmitter implements IServiceEvent {
     private _stomp;
     private _state;
     private _config;
     private _intervalTimer;
     constructor();
     publishChannels: string[];
+    /**
+     * Set configuration
+     *
+     * @param config
+     */
     configure(config: StompConfig): void;
+    /**
+     * Start the service
+     * @event StompService#connected
+     */
     start: (isTest?: boolean) => Promise<boolean>;
     /**
      * Receive the message from broker, emit JSON data to the listener
      *
-     *
+     * @fires StompService#message
      * @memberof StompService
      */
-    onMessageHandler: (message: any) => void;
+    onMessageHandler: (message: Message) => void;
     /**
      * Handling the publish message, translate data to string file
      *
@@ -42,12 +51,12 @@ export declare class StompService extends EventEmitter implements ServiceEvent {
     errorCollector: (data: any) => void;
     status: () => StompServiceState;
 }
-export interface ServiceEvent {
+export interface IServiceEvent {
     on(state: 'connected', fn: () => void): any;
     on(state: 'error', fn: () => void): any;
     on(state: 'message', fn: (message: Message) => void): any;
     once(state: 'connected', fn: () => void): any;
     once(state: 'error', fn: () => void): any;
     once(state: 'message', fn: (message: Message) => void): any;
-    emit(state: 'publish', data: any): any;
+    emit(event: 'publish', data: any): any;
 }
