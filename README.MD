@@ -57,3 +57,12 @@ client.emit('publish', {test:'test'})
 // with specific channel
 client.emit('publish', {test:'test', _channel:'/topic/special'})
 ```
+
+### On message receive
+
+```javascript
+// data is object
+client.on('message', data => {
+    /// do something
+})
+```
