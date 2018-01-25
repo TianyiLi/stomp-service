@@ -6,6 +6,16 @@ class STOMP {
     constructor() {
         this._subscribeList = [];
         this._websocket = undefined;
+        this.unsubscribe = (channel) => {
+            let element = this._subscribeList.find(ele => ele.content === channel);
+            if (!~this._subscribeList.indexOf(element)) {
+                this._client.unsubscribe(element.id);
+                this._subscribeList.splice(this._subscribeList.indexOf(element), 1);
+                return true;
+            }
+            else
+                return false;
+        };
         // Callback run on successfully connecting to server
         this.on_connect = () => {
             // Indicate our connected state to observers
@@ -110,7 +120,12 @@ class STOMP {
         }
     }
     /** Subscribe to server message queues */
-    subscribe() {
+    subscribe(channel) {
+        if (channel && !this._subscribeList.find(ele => ele.content === channel)) {
+            let subscribeId = this._client.subscribe(channel, this._connectCallBack, { ack: 'auto' });
+            this._subscribeList.push({ id: subscribeId, content: channel });
+            return;
+        }
         // Subscribe to our configured queues
         for (let t of this._config.subscribe) {
             let subscribeId = this._client.subscribe(t, this._connectCallBack, { ack: 'auto' });

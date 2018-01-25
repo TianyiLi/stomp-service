@@ -29,7 +29,8 @@ export declare class STOMP {
     /** Send a message to all topics */
     publish(message: string, publish?: string[]): void;
     /** Subscribe to server message queues */
-    subscribe(): void;
+    subscribe(channel?: string): void;
+    unsubscribe: (channel: string) => Boolean;
     /**
      * Callback Functions
      *

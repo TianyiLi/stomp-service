@@ -120,7 +120,12 @@ export class STOMP {
 
 
   /** Subscribe to server message queues */
-  public subscribe(): void {
+  public subscribe(channel?:string): void {
+    if (channel && !this._subscribeList.find(ele=>ele.content === channel)) {
+      let subscribeId = this._client.subscribe(channel, this._connectCallBack, { ack: 'auto' });
+      this._subscribeList.push({ id: subscribeId, content: channel });
+      return
+    }
 
     // Subscribe to our configured queues
     for (let t of this._config.subscribe) {
@@ -132,6 +137,16 @@ export class STOMP {
     if (this._config.subscribe.length > 0) {
       this.state = STOMPState.SUBSCRIBED;
     }
+  }
+
+  public unsubscribe = (channel:string):Boolean => {
+    let element = this._subscribeList.find(ele => ele.content === channel)
+    if (!~this._subscribeList.indexOf(element)) {
+      this._client.unsubscribe(element.id)
+      this._subscribeList.splice(this._subscribeList.indexOf(element), 1)
+      return true
+    } else
+      return false
   }
 
   /**

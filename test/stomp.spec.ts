@@ -2,6 +2,7 @@ import 'mocha'
 import * as assert from 'assert'
 import { StompService, stompConfig, StompServiceState } from '../src/index';
 import * as merge from 'merge'
+const EXPECTED_TIMEOUT = 2000
 let client = new StompService()
 let client2 = new StompService()
 describe('StompServiceTest', () => {
@@ -23,7 +24,7 @@ describe('StompServiceTest', () => {
     client2.disconnect()
   })
   it('Service should emit connected when connection established', done => {
-    client.on('connected', () => done())
+    client.once('connected', () => done())
     client.start()
   })
   it('Service state should on connected', () => {
@@ -33,5 +34,19 @@ describe('StompServiceTest', () => {
   it('Service should receive a message which from client2', done => {
     client.once('message', msg => done())
     client2.emit('publish', { e: 'test' })
+  })
+  it('Service should be able to subscribe a new Channel', done=>{
+    client.subscribe('/topic/app.test2')
+    client.once('message', msg => done())
+    let chns = client2.publishChannels
+    chns.push('/topic/app.test2')
+    client2.emit('publish', {e:'test'})
+  })
+  it('Service should be able to unsubscribe a channel', function(done){
+    this.timeout(EXPECTED_TIMEOUT+100)
+    setTimeout(done, EXPECTED_TIMEOUT)
+    client.unsubscribe('/topic/app.test2')
+    client.once('message', msg=> done())
+    client2.emit('publish', {e:"test", _channel:'/queue/app.test2'})
   })
 })

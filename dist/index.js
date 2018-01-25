@@ -71,6 +71,10 @@ class StompService extends events_1.EventEmitter {
         this.onPublishHandler = (data) => {
             let d = data instanceof Object ? data : JSON.parse(data);
             let publish_channel = this._config.publish;
+            if (d._channel) {
+                publish_channel = d._channel;
+                delete d._channel;
+            }
             d.src = 'node-payment';
             this._stomp.publish(d, publish_channel);
         };
@@ -92,8 +96,20 @@ class StompService extends events_1.EventEmitter {
             return this._state;
         };
     }
+    get publishChannels() {
+        return this._config.publish;
+    }
+    set publishChannels(chns) {
+        this._config.publish = chns;
+    }
     configure(config) {
         this._config = Object.assign({}, this._config, config);
+    }
+    get unsubscribe() {
+        return this._stomp.unsubscribe;
+    }
+    subscribe(channel) {
+        return this._stomp.subscribe(channel);
     }
 }
 exports.StompService = StompService;

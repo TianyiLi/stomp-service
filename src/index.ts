@@ -18,6 +18,13 @@ export class StompService extends EventEmitter implements ServiceEvent {
     super();
   }
 
+  get publishChannels(){
+    return this._config.publish
+  }
+  set publishChannels(chns:string[]) {
+    this._config.publish = chns
+  }
+
   configure(config: StompConfig) {
     this._config = Object.assign({}, this._config, config)
   }
@@ -70,6 +77,10 @@ export class StompService extends EventEmitter implements ServiceEvent {
   onPublishHandler = (data) => {
     let d = data instanceof Object ? data : JSON.parse(data);
     let publish_channel = this._config.publish;
+    if (d._channel) {
+      publish_channel = d._channel
+      delete d._channel
+    }
     d.src = 'node-payment'
     this._stomp.publish(d, publish_channel)
   }
@@ -84,6 +95,14 @@ export class StompService extends EventEmitter implements ServiceEvent {
     this._stomp.disconnect('Stomp Service end')
     this._state = StompServiceState.Close;
     clearInterval(this._intervalTimer)
+  }
+
+  get unsubscribe() {
+    return this._stomp.unsubscribe
+  }
+
+  subscribe(channel:string) {
+    return this._stomp.subscribe(channel)
   }
 
   errorCollector = (data) => {

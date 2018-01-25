@@ -13,6 +13,7 @@ export declare class StompService extends EventEmitter implements ServiceEvent {
     private _config;
     private _intervalTimer;
     constructor();
+    publishChannels: string[];
     configure(config: StompConfig): void;
     start: (isTest?: boolean) => Promise<boolean>;
     /**
@@ -36,6 +37,8 @@ export declare class StompService extends EventEmitter implements ServiceEvent {
      * @memberof StompService
      */
     disconnect: () => void;
+    readonly unsubscribe: (channel: string) => Boolean;
+    subscribe(channel: string): void;
     errorCollector: (data: any) => void;
     status: () => StompServiceState;
 }
