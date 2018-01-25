@@ -43,7 +43,7 @@ async function connect () {
 
 ```javascript
 // subscribe
-client.subscribe('/topic/new.channel)
+client.subscribe('/topic/new.channel')
 
 // unsubscribe
 client.unsubscribe('/topic/new.channel')
