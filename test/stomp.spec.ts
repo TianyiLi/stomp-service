@@ -2,11 +2,18 @@ import 'mocha'
 import * as assert from 'assert'
 import { StompService, stompConfig, StompServiceState } from '../src/index';
 import * as merge from 'merge'
+import * as Stomp from 'stomp-broker-js'
+import * as http from 'http'
 const EXPECTED_TIMEOUT = 2000
 let client = new StompService()
 let client2 = new StompService()
+let server = http.createServer()
+let stompServer = new Stomp({ server, debug () { process.env.NODE_DEBUG && console.log(arguments) } }, ['/stomp', '/stomp/websocket'])
 describe('StompServiceTest', () => {
   before(async () => {
+    stompServer.start()
+    stompServer.on('error', console.log.bind(console))
+    server.listen(61614)
     let config = stompConfig,
       config2 = merge(true, stompConfig)
     config.path = '/stomp'
@@ -22,6 +29,8 @@ describe('StompServiceTest', () => {
   after(() => {
     client.disconnect()
     client2.disconnect()
+    stompServer.removeAllListeners()
+    server.close()
   })
   it('Service should emit connected when connection established', done => {
     client.once('connected', () => done())
@@ -34,6 +43,13 @@ describe('StompServiceTest', () => {
   it('Service should receive a message which from client2', done => {
     client.once('message', msg => done())
     client2.emit('publish', { e: 'test' })
+  })
+  it('service should be able get text massage', (done) => {
+    client.once('message', msg => {
+      assert.equal(msg, 'ok')
+      done()
+    })
+    client2.emit('publish', 'ok')
   })
   it('Service should be able to subscribe a new Channel', done=>{
     client.subscribe('/topic/app.test2')

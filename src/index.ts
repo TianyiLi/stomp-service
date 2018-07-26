@@ -80,7 +80,12 @@ export class StompService extends EventEmitter implements IServiceEvent {
   onMessageHandler = (message: Message) => {
     if (!message.body) console.log("Empty message receive");
     else {
-      let data = JSON.parse(message.body);
+      let data;
+      try {
+        data = JSON.parse(message.body)
+      } catch (error) {
+        data = message.body
+      }
       
       /**
        * message event
@@ -98,7 +103,12 @@ export class StompService extends EventEmitter implements IServiceEvent {
    * @memberof StompService
    */
   onPublishHandler = (data) => {
-    let d = data instanceof Object ? data : JSON.parse(data);
+    let d;
+    try {
+      d = JSON.parse(data)
+    } catch (error) {
+      d = data
+    }
     let publish_channel = this._config.publish;
     if (d._channel) {
       publish_channel = d._channel
